@@ -42,27 +42,35 @@ function getInnocentTry(i) {
     return p;
   }
   const q = 1 - p;
-  const k = 0.5;
+  const k = INNOCENT_PERCENT;
   return p * q * k * math.pow(1 - p * k, i - 1);
 }
 
-// function getInnocentMean() {
-//   const p = pieceBinomCum[INNOCENT_LIMIT];
-//   const q = 1 - p;
-//   const k = 0.5;
-//   return (q * k * (1 - q * k)) / (p * (1 - k) * (1 - k));
-// }
+function getInnocentMean() {
+  const p = pieceBinomCum[INNOCENT_LIMIT];
+  const q = 1 - p;
+  const k = INNOCENT_PERCENT;
+  return q / (p * k);
+}
 
-// function getWhiteProb(i, success) {
-//   return (
-//     math.combinations(i - 1, success - 1) *
-//     math.pow(0.1, success) *
-//     math.pow(0.9, i - success)
-//   );
-// }
+function getWhiteProb(i) {
+  const p = PIECE_PERCENT;
+  const q = 1 - p;
+  const k = WHITE_PERCENT;
+  return p * k * math.pow(1 - p * k, i - 1);
+}
 
-// function getWhiteTry(i) {}
+function getWhiteMean() {
+  const p = PIECE_PERCENT;
+  const q = 1 - p;
+  const k = WHITE_PERCENT;
+  return (p * k) / (p * p * k * k);
+}
 
 init();
 const a = getInnocentTry(2);
+const b = getInnocentMean();
+const c = getWhiteProb(1);
 console.log(a);
+console.log(b);
+c;
