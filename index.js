@@ -68,24 +68,24 @@ function getWhiteProb(
     return (pieceBinom[upgradeLimit] / pieceBinomCum[innocentLimit]) * p;
   }
   let sum = 0;
-  for (let j = innocentLimit; j <= upgradeLimit; j++) {
-    const prob = pieceBinom[j] / pieceBinomCum[innocentLimit];
-    const k = upgradeLimit + 1 - j;
-    if (i >= k) {
+  for (let j = 1; j <= upgradeLimit - innocentLimit + 1; j++) {
+    const prob =
+      pieceBinom[upgradeLimit - j + 1] / pieceBinomCum[innocentLimit];
+    if (i >= j) {
       sum +=
         q *
         prob *
-        math.combinations(i - 1, k - 1) *
-        math.pow(rate, k) *
-        math.pow(1 - rate, i - k);
+        math.combinations(i - 1, j - 1) *
+        math.pow(rate, j) *
+        math.pow(1 - rate, i - j);
     }
-    if (k >= 2 && i >= k - 1) {
+    if (j >= 2 && i >= j - 1) {
       sum +=
         p *
         prob *
-        math.combinations(i - 1, k - 2) *
-        math.pow(rate, k - 1) *
-        math.pow(1 - rate, i - k + 1);
+        math.combinations(i - 1, j - 2) *
+        math.pow(rate, j - 1) *
+        math.pow(1 - rate, i - j + 1);
     }
   }
   return sum;
@@ -126,7 +126,6 @@ function run() {
   const b = getInnocentMean(config);
   const c = getWhiteProb(0, config);
   const d = getWhiteMean(config);
-  console.log(b, d);
 }
 
 run();
