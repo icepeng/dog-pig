@@ -1,40 +1,40 @@
 const math = require('mathjs');
 
-function init({ upgradeLimit, piecePercentage }) {
-  const pieceBinom = [];
-  const pieceBinomCum = [];
+function init({ upgradeLimit, upgradePercentage }) {
+  const upgradeBinom = [];
+  const upgradeBinomCum = [];
   for (let i = 0; i <= upgradeLimit; i++) {
-    pieceBinom[i] =
-      math.pow(1 - piecePercentage, upgradeLimit - i) *
-      math.pow(piecePercentage, i) *
+    upgradeBinom[i] =
+      math.pow(1 - upgradePercentage, upgradeLimit - i) *
+      math.pow(upgradePercentage, i) *
       math.combinations(upgradeLimit, i);
   }
   for (let i = 0; i <= upgradeLimit; i++) {
-    pieceBinomCum[i] = 0;
+    upgradeBinomCum[i] = 0;
     for (let j = i; j <= upgradeLimit; j++) {
-      pieceBinomCum[i] += pieceBinom[j];
+      upgradeBinomCum[i] += upgradeBinom[j];
     }
   }
   return {
     upgradeLimit,
-    piecePercentage,
-    pieceBinomCum,
-    pieceBinom,
+    upgradePercentage,
+    upgradeBinomCum,
+    upgradeBinom,
   };
 }
 
-// function getPieceTry(i) {
+// function getupgradeTry(i) {
 //   return (
-//     pieceBinomCum[INNOCENT_LIMIT] *
-//     math.pow(1 - pieceBinomCum[INNOCENT_LIMIT], i - 1)
+//     upgradeBinomCum[INNOCENT_LIMIT] *
+//     math.pow(1 - upgradeBinomCum[INNOCENT_LIMIT], i - 1)
 //   );
 // }
 
-function getInnocentTry(
+function getInnocentProb(
   i,
-  { pieceBinomCum, innocentLimit, innocentPercentage },
+  { upgradeBinomCum, innocentLimit, innocentPercentage },
 ) {
-  const p = pieceBinomCum[innocentLimit];
+  const p = upgradeBinomCum[innocentLimit];
   if (i === 0) {
     return p;
   }
@@ -43,8 +43,12 @@ function getInnocentTry(
   return p * q * k * math.pow(1 - p * k, i - 1);
 }
 
-function getInnocentMean({ pieceBinomCum, innocentLimit, innocentPercentage }) {
-  const p = pieceBinomCum[innocentLimit];
+function getInnocentMean({
+  upgradeBinomCum,
+  innocentLimit,
+  innocentPercentage,
+}) {
+  const p = upgradeBinomCum[innocentLimit];
   const q = 1 - p;
   const k = innocentPercentage;
   return q / (p * k);
@@ -53,24 +57,25 @@ function getInnocentMean({ pieceBinomCum, innocentLimit, innocentPercentage }) {
 function getWhiteProb(
   i,
   {
-    pieceBinom,
-    pieceBinomCum,
-    piecePercentage,
+    upgradeBinom,
+    upgradeBinomCum,
+    upgradePercentage,
     upgradeLimit,
     innocentLimit,
     whitePercentage,
+    hammerPercentage,
   },
 ) {
-  const p = piecePercentage;
+  const p = upgradePercentage * hammerPercentage;
   const q = 1 - p;
   const rate = p * whitePercentage;
   if (i === 0) {
-    return (pieceBinom[upgradeLimit] / pieceBinomCum[innocentLimit]) * p;
+    return (upgradeBinom[upgradeLimit] / upgradeBinomCum[innocentLimit]) * p;
   }
   let sum = 0;
   for (let j = 1; j <= upgradeLimit - innocentLimit + 1; j++) {
     const prob =
-      pieceBinom[upgradeLimit - j + 1] / pieceBinomCum[innocentLimit];
+      upgradeBinom[upgradeLimit - j + 1] / upgradeBinomCum[innocentLimit];
     if (i >= j) {
       sum +=
         q *
@@ -92,40 +97,41 @@ function getWhiteProb(
 }
 
 function getWhiteMean({
-  pieceBinom,
-  pieceBinomCum,
-  piecePercentage,
+  upgradeBinom,
+  upgradeBinomCum,
+  upgradePercentage,
   upgradeLimit,
   innocentLimit,
   whitePercentage,
+  hammerPercentage,
 }) {
-  const p = piecePercentage;
-  const q = 1 - p;
-  const rate = p * whitePercentage;
+  const rate = upgradePercentage * whitePercentage;
   let sum = 0;
-  for (let j = innocentLimit; j <= upgradeLimit; j++) {
-    const prob = pieceBinom[j] / pieceBinomCum[innocentLimit];
-    const k = upgradeLimit + 1 - j;
-    sum += (q * prob * k) / rate;
-    sum += (p * prob * (k - 1)) / rate;
+  for (let j = 1; j <= upgradeLimit - innocentLimit + 1; j++) {
+    sum +=
+      (upgradeBinom[upgradeLimit - j + 1] / upgradeBinomCum[innocentLimit]) * j;
   }
+  sum /= upgradePercentage * whitePercentage;
+  sum -= hammerPercentage / whitePercentage;
   return sum;
 }
 
 function run() {
   const config = {
     ...init({
-      piecePercentage: 0.39,
+      upgradePercentage: 0.39,
       upgradeLimit: 8,
     }),
     innocentPercentage: 0.45,
     whitePercentage: 0.1,
+    hammerPercentage: 1,
     innocentLimit: 4,
   };
-  const a = getInnocentTry(2, config);
+  const a = getInnocentProb(2, config);
   const b = getInnocentMean(config);
   const c = getWhiteProb(0, config);
   const d = getWhiteMean(config);
+  console.log(d);
 }
 
 run();
