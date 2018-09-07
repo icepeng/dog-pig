@@ -68,7 +68,7 @@ function getWhiteProb(
 ) {
   const p = upgradePercentage * hammerPercentage;
   const q = 1 - p;
-  const rate = p * whitePercentage;
+  const rate = upgradePercentage * whitePercentage;
   if (i === 0) {
     return (upgradeBinom[upgradeLimit] / upgradeBinomCum[innocentLimit]) * p;
   }
@@ -105,7 +105,6 @@ function getWhiteMean({
   whitePercentage,
   hammerPercentage,
 }) {
-  const rate = upgradePercentage * whitePercentage;
   let sum = 0;
   for (let j = 1; j <= upgradeLimit - innocentLimit + 1; j++) {
     sum +=
