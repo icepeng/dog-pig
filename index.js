@@ -135,54 +135,47 @@ function getWhiteMean({
   return sum;
 }
 
-// function getHammerProb(
-//   i,
-//   {
-//     upgradeBinom,
-//     upgradeBinomCum,
-//     innocentLimit,
-//     upgradePercentage,
-//     hammerPercentage,
-//     isBeforeHammer,
-//   },
-// ) {
-//   if (!isBeforeHammer) {
-//     return i === 1 ? 1 : 0;
-//   }
-//   const p =
-//     upgradeBinomCum[innocentLimit] +
-//     (isBeforeHammer
-//       ? upgradeBinom[innocentLimit - 1] * hammerPercentage * upgradePercentage
-//       : 0);
-//   const q = 1 - p;
-//   const k =
-//     (upgradeBinom[innocentLimit - 1] *
-//       (1 - hammerPercentage * upgradePercentage)) /
-//     (1 - upgradeBinomCum[innocentLimit]);
-//   return p * q * k * math.pow(1 - p * k, i - 1);
-// }
+function getHammerProb(
+  i,
+  {
+    upgradeBinom,
+    upgradeBinomCum,
+    innocentLimit,
+    upgradePercentage,
+    hammerPercentage,
+    isBeforeHammer,
+  },
+) {
+  if (!isBeforeHammer) {
+    return i === 1 ? 1 : 0;
+  }
+  const p =
+    upgradeBinomCum[innocentLimit] +
+    (isBeforeHammer
+      ? upgradeBinom[innocentLimit - 1] * hammerPercentage * upgradePercentage
+      : 0);
+  return (
+    (p / upgradeBinomCum[innocentLimit - 1]) *
+    math.pow(1 - p / upgradeBinomCum[innocentLimit - 1], i - 1)
+  );
+}
 
-// function getHammerMean({
-//   upgradeBinom,
-//   upgradeBinomCum,
-//   innocentLimit,
-//   upgradePercentage,
-//   hammerPercentage,
-//   isBeforeHammer,
-// }) {
-//   if (!isBeforeHammer) {
-//     return 1;
-//   }
-//   const p =
-//     upgradeBinomCum[innocentLimit] +
-//     upgradeBinom[innocentLimit - 1] * hammerPercentage * upgradePercentage;
-//   const q = 1 - p;
-//   return (
-//     upgradeBinom[innocentLimit - 1] /
-//       (q * (1 - upgradeBinomCum[innocentLimit])) +
-//     1
-//   );
-// }
+function getHammerMean({
+  upgradeBinom,
+  upgradeBinomCum,
+  innocentLimit,
+  upgradePercentage,
+  hammerPercentage,
+  isBeforeHammer,
+}) {
+  if (!isBeforeHammer) {
+    return 1;
+  }
+  const p =
+    upgradeBinomCum[innocentLimit] +
+    upgradeBinom[innocentLimit - 1] * hammerPercentage * upgradePercentage;
+  return upgradeBinomCum[innocentLimit - 1] / p;
+}
 
 function run() {
   const config = {
@@ -192,7 +185,7 @@ function run() {
     }),
     innocentPercentage: 0.45,
     whitePercentage: 0.1,
-    hammerPercentage: 1,
+    hammerPercentage: 0.5,
     innocentLimit: 4,
     isBeforeHammer: true,
   };
@@ -200,8 +193,9 @@ function run() {
   const b = getInnocentMean(config);
   const c = getWhiteProb(0, config);
   const d = getWhiteMean(config);
-  // const e = getHammerProb(1, config);
-  // console.log(e);
+  const e = getHammerProb(5, config);
+  const f = getHammerMean(config);
+  console.log(f);
 }
 
 run();
