@@ -86,16 +86,18 @@ function getWhiteProb(
     hammerPercentage,
   },
 ) {
+  const hammerLeft = upgradeBinomCum[innocentLimit];
+  const hammerUsed =
+    upgradeBinom[innocentLimit - 1] * hammerPercentage * upgradePercentage;
   const p = upgradePercentage * hammerPercentage;
   const q = 1 - p;
   const rate = upgradePercentage * whitePercentage;
   if (i === 0) {
-    return (upgradeBinom[upgradeLimit] / upgradeBinomCum[innocentLimit]) * p;
+    return (upgradeBinom[upgradeLimit] / (hammerLeft + hammerUsed)) * p;
   }
   let sum = 0;
   for (let j = 1; j <= upgradeLimit - innocentLimit + 1; j++) {
-    const prob =
-      upgradeBinom[upgradeLimit - j + 1] / upgradeBinomCum[innocentLimit];
+    const prob = upgradeBinom[upgradeLimit - j + 1] / (hammerLeft + hammerUsed);
     if (i >= j) {
       sum +=
         q *
@@ -113,6 +115,13 @@ function getWhiteProb(
         math.pow(1 - rate, i - j + 1);
     }
   }
+  if (i >= upgradeLimit - innocentLimit + 1) {
+    sum +=
+      (hammerUsed / (hammerLeft + hammerUsed)) *
+      math.combinations(i - 1, upgradeLimit - innocentLimit) *
+      math.pow(rate, upgradeLimit - innocentLimit + 1) *
+      math.pow(1 - rate, i - upgradeLimit + innocentLimit - 1);
+  }
   return sum;
 }
 
@@ -125,6 +134,10 @@ function getWhiteMean({
   whitePercentage,
   hammerPercentage,
 }) {
+  const hammerLeft = upgradeBinomCum[innocentLimit];
+  const hammerUsed =
+    upgradeBinom[innocentLimit - 1] * hammerPercentage * upgradePercentage;
+
   let sum = 0;
   for (let j = 1; j <= upgradeLimit - innocentLimit + 1; j++) {
     sum +=
@@ -132,7 +145,12 @@ function getWhiteMean({
   }
   sum /= upgradePercentage * whitePercentage;
   sum -= hammerPercentage / whitePercentage;
-  return sum;
+  return (
+    (sum * hammerLeft +
+      (hammerUsed * (upgradeLimit - innocentLimit + 1)) /
+        (upgradePercentage * whitePercentage)) /
+    (hammerLeft + hammerUsed)
+  );
 }
 
 function getHammerProb(
@@ -195,7 +213,6 @@ function run() {
   const d = getWhiteMean(config);
   const e = getHammerProb(5, config);
   const f = getHammerMean(config);
-  console.log(f);
 }
 
 run();
