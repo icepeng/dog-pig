@@ -84,20 +84,22 @@ function getWhiteProb(
     innocentLimit,
     whitePercentage,
     hammerPercentage,
+    isBeforeHammer,
   },
 ) {
-  const hammerLeft = upgradeBinomCum[innocentLimit];
-  const hammerUsed =
-    upgradeBinom[innocentLimit - 1] * hammerPercentage * upgradePercentage;
+  const total = isBeforeHammer
+    ? upgradeBinomCum[innocentLimit] +
+      upgradeBinom[innocentLimit - 1] * hammerPercentage * upgradePercentage
+    : upgradeBinomCum[innocentLimit];
   const p = upgradePercentage * hammerPercentage;
   const q = 1 - p;
   const rate = upgradePercentage * whitePercentage;
   if (i === 0) {
-    return (upgradeBinom[upgradeLimit] / (hammerLeft + hammerUsed)) * p;
+    return (upgradeBinom[upgradeLimit] / total) * p;
   }
   let sum = 0;
   for (let j = 1; j <= upgradeLimit - innocentLimit + 1; j++) {
-    const prob = upgradeBinom[upgradeLimit - j + 1] / (hammerLeft + hammerUsed);
+    const prob = upgradeBinom[upgradeLimit - j + 1] / total;
     if (i >= j) {
       sum +=
         q *
@@ -115,9 +117,12 @@ function getWhiteProb(
         math.pow(1 - rate, i - j + 1);
     }
   }
-  if (i >= upgradeLimit - innocentLimit + 1) {
+  if (i >= upgradeLimit - innocentLimit + 1 && isBeforeHammer) {
     sum +=
-      (hammerUsed / (hammerLeft + hammerUsed)) *
+      ((upgradeBinom[innocentLimit - 1] *
+        hammerPercentage *
+        upgradePercentage) /
+        total) *
       math.combinations(i - 1, upgradeLimit - innocentLimit) *
       math.pow(rate, upgradeLimit - innocentLimit + 1) *
       math.pow(1 - rate, i - upgradeLimit + innocentLimit - 1);
@@ -133,6 +138,7 @@ function getWhiteMean({
   innocentLimit,
   whitePercentage,
   hammerPercentage,
+  isBeforeHammer,
 }) {
   const hammerLeft = upgradeBinomCum[innocentLimit];
   const hammerUsed =
@@ -145,12 +151,12 @@ function getWhiteMean({
   }
   sum /= upgradePercentage * whitePercentage;
   sum -= hammerPercentage / whitePercentage;
-  return (
-    (sum * hammerLeft +
-      (hammerUsed * (upgradeLimit - innocentLimit + 1)) /
-        (upgradePercentage * whitePercentage)) /
-    (hammerLeft + hammerUsed)
-  );
+  return isBeforeHammer
+    ? (sum * hammerLeft +
+        (hammerUsed * (upgradeLimit - innocentLimit + 1)) /
+          (upgradePercentage * whitePercentage)) /
+        (hammerLeft + hammerUsed)
+    : sum;
 }
 
 function getHammerProb(
