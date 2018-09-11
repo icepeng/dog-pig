@@ -14,6 +14,7 @@ const WHITE_PRICE = 500;
 const HAMMER_PRICE = 600;
 
 const ITERATE_NUMBER = 10000000;
+const INNOCENT_LIMIT = 5;
 
 function tryUpgrade(state) {
   state.upgrade += 1;
@@ -71,7 +72,7 @@ function run() {
         break;
       }
       if (state.left === 0) {
-        if (state.success >= 4) {
+        if (state.success >= INNOCENT_LIMIT) {
           if (!state.hammerApplied) {
             tryHammer(state);
           } else {
@@ -79,16 +80,18 @@ function run() {
           }
           continue;
         }
-        if (state.success === 3 && !state.hammerApplied) {
-          tryHammer(state);
-          continue;
-        }
+        // if (state.success === 3 && !state.hammerApplied) {
+        //   tryHammer(state);
+        //   continue;
+        // }
         tryInnocent(state);
         continue;
       }
       if (
-        (state.hammerApplied && state.left + state.success < 4) ||
-        (!state.hammerApplied && state.left + state.success + 1 < 4)
+        state.left + state.success <
+        INNOCENT_LIMIT
+        // (state.hammerApplied && state.left + state.success < INNOCENT_LIMIT) ||
+        // (!state.hammerApplied && state.left + state.success + 1 < INNOCENT_LIMIT)
       ) {
         tryInnocent(state);
         continue;
