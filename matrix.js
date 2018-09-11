@@ -53,15 +53,17 @@ let minB;
 
 function recursive(t1, a1, depth) {
   A[depth] = { try: t1, action: a1 };
+  B[depth] = {
+    try: a1 === 'I' ? t1 + 1 : 9,
+    action: a1 === 'I' ? 'I' : 'W',
+  };
   if (depth === 8) {
     // console.log(A);
-    const res = calculate(A, [...B, { try: 9, action: 'FINISH' }])
+    const res = calculate(A, [...B, { try: 9, action: 'FINISH' }]);
     if (res < min) {
       min = res;
-      minA = A;
-      minB = B;
-      console.log(minA);
-      console.log(minB);
+      minA = JSON.parse(JSON.stringify(A));
+      minB = JSON.parse(JSON.stringify(B));
     }
     return;
   }
@@ -78,6 +80,8 @@ for (let i = 1; i <= 8; i++) {
 }
 
 console.log(min);
+console.log(minA);
+console.log(minB);
 
 function calculate(actionNormal, actionHammer) {
   const actionMatrixNormal = [
