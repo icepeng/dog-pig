@@ -45,22 +45,39 @@ const HAMMER_4 = [
   { try: 9, action: 'FINISH' },
 ];
 
-// const A = [];
+const A = [];
+const B = [];
+let min = 99999999;
+let minA;
+let minB;
 
-// function recursive(n, depth) {
-//   if (depth >= 8) {
-//     console.log(A);
-//     return;
-//   }
-//   for (let i = n; i <= 8; i++) {
-//     A[depth] = { try: n, action: 'I' };
-//     recursive(i, depth + 1);
-//     A[depth] = { try: n, action: 'H' };
-//     recursive(i, depth + 1);
-//   }
-// }
+function recursive(t1, a1, depth) {
+  A[depth] = { try: t1, action: a1 };
+  if (depth === 8) {
+    // console.log(A);
+    const res = calculate(A, [...B, { try: 9, action: 'FINISH' }])
+    if (res < min) {
+      min = res;
+      minA = A;
+      minB = B;
+      console.log(minA);
+      console.log(minB);
+    }
+    return;
+  }
+  for (let i = t1; i <= 8; i++) {
+    if (a1 === 'I' && depth + 1 < 8 && i != t1) {
+      recursive(i, 'I', depth + 1);
+    }
+    recursive(i, 'H', depth + 1);
+  }
+}
 
-// recursive(1, 0);
+for (let i = 1; i <= 8; i++) {
+  recursive(i, 'I', 0);
+}
+
+console.log(min);
 
 function calculate(actionNormal, actionHammer) {
   const actionMatrixNormal = [
@@ -101,9 +118,6 @@ function calculate(actionNormal, actionHammer) {
     }
     actionMatrixHammer[i][actionHammer[i].try] = actionHammer[i].action;
   }
-
-  console.log(actionMatrixNormal);
-  console.log(actionMatrixHammer);
 
   const costNormal = [
     [0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -284,7 +298,8 @@ function calculate(actionNormal, actionHammer) {
   }
 
   // console.log(costNormal);
-  console.log(costFinalNormal[0][0]);
+  // console.log(costFinalNormal[0][0]);
+  return costFinalNormal[0][0];
 }
 
 calculate(NORMAL_4, HAMMER_4);
