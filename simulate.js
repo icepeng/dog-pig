@@ -8,7 +8,12 @@ const INNOCENT_PERCENTAGE = 0.45;
 const WHITE_PERCENTAGE = 0.1;
 const HAMMER_PERCENTAGE = 0.5;
 
-const ITERATE_NUMBER = 1000000;
+const UPGRADE_PRICE = 337.5;
+const INNOCENT_PRICE = 1250;
+const WHITE_PRICE = 500;
+const HAMMER_PRICE = 600;
+
+const ITERATE_NUMBER = 10000000;
 
 function tryUpgrade(state) {
   state.upgrade += 1;
@@ -44,6 +49,7 @@ function tryHammer(state) {
 
 function run() {
   let t = 0;
+  let mean = 0;
   while (true) {
     if (t >= ITERATE_NUMBER) {
       break;
@@ -95,6 +101,12 @@ function run() {
     hammer[state.hammer] = (hammer[state.hammer] || 0) + 1;
     innocent[state.innocent] = (innocent[state.innocent] || 0) + 1;
     white[state.white] = (white[state.white] || 0) + 1;
+    mean +=
+      (state.upgrade * UPGRADE_PRICE +
+        state.hammer * HAMMER_PRICE +
+        state.innocent * INNOCENT_PRICE +
+        state.white * WHITE_PRICE) /
+      ITERATE_NUMBER;
   }
 
   console.log(upgrade.reduce((sum, x, i) => sum + (i * x) / ITERATE_NUMBER, 0));
@@ -103,7 +115,7 @@ function run() {
   );
   console.log(white.reduce((sum, x, i) => sum + (i * x) / ITERATE_NUMBER, 0));
   console.log(hammer.reduce((sum, x, i) => sum + (i * x) / ITERATE_NUMBER, 0));
-  console.log(hammer)
+  console.log(mean);
 }
 
 run();
