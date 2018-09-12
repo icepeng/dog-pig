@@ -20,186 +20,49 @@ const HAMMER_PRICE = 600;
 //   [null, null, null, null, null, null, null, null, 'H'],
 // ];
 
-const NORMAL_4 = [
-  { action: 'I', try: 5 },
-  { action: 'I', try: 6 },
-  { action: 'I', try: 7 },
-  { action: 'I', try: 8 },
-  { action: 'H', try: 8 },
-  { action: 'H', try: 8 },
-  { action: 'H', try: 8 },
-  { action: 'H', try: 8 },
-  { action: 'H', try: 8 },
-];
+function calculate(upgradeLimit, actionNormal, actionHammer) {
+  const actionMatrixNormal = Array.from(Array(upgradeLimit + 1), () =>
+    Array(upgradeLimit + 1).fill(null),
+  );
+  const actionMatrixHammer = Array.from(Array(upgradeLimit + 2), () =>
+    Array(upgradeLimit + 2).fill(null),
+  );
 
-const HAMMER_4 = [
-  { try: 6, action: 'I' },
-  { try: 7, action: 'I' },
-  { try: 8, action: 'I' },
-  { try: 9, action: 'I' },
-  { try: 9, action: 'W' },
-  { try: 9, action: 'W' },
-  { try: 9, action: 'W' },
-  { try: 9, action: 'W' },
-  { try: 9, action: 'W' },
-  { try: 9, action: 'FINISH' },
-];
-
-const A = [];
-const B = [];
-let min = 99999999;
-let minA;
-let minB;
-
-function recursive(t1, a1, depth) {
-  A[depth] = { try: t1, action: a1 };
-  B[depth] = {
-    try: a1 === 'I' ? t1 + 1 : 9,
-    action: a1 === 'I' ? 'I' : 'W',
-  };
-  if (depth === 8) {
-    // console.log(A);
-    const res = calculate(A, [...B, { try: 9, action: 'FINISH' }]);
-    if (res < min) {
-      min = res;
-      minA = JSON.parse(JSON.stringify(A));
-      minB = JSON.parse(JSON.stringify(B));
-    }
-    return;
-  }
-  for (let i = t1; i <= 8; i++) {
-    if (a1 === 'I' && depth + 1 < 8 && i != t1) {
-      recursive(i, 'I', depth + 1);
-    }
-    recursive(i, 'H', depth + 1);
-  }
-}
-
-for (let i = 1; i <= 8; i++) {
-  recursive(i, 'I', 0);
-}
-
-console.log(min);
-console.log(minA);
-console.log(minB);
-
-function calculate(actionNormal, actionHammer) {
-  const actionMatrixNormal = [
-    [null, null, null, null, null, null, null, null, null],
-    [null, null, null, null, null, null, null, null, null],
-    [null, null, null, null, null, null, null, null, null],
-    [null, null, null, null, null, null, null, null, null],
-    [null, null, null, null, null, null, null, null, null],
-    [null, null, null, null, null, null, null, null, null],
-    [null, null, null, null, null, null, null, null, null],
-    [null, null, null, null, null, null, null, null, null],
-    [null, null, null, null, null, null, null, null, null],
-  ];
-
-  const actionMatrixHammer = [
-    [null, null, null, null, null, null, null, null, null, null],
-    [null, null, null, null, null, null, null, null, null, null],
-    [null, null, null, null, null, null, null, null, null, null],
-    [null, null, null, null, null, null, null, null, null, null],
-    [null, null, null, null, null, null, null, null, null, null],
-    [null, null, null, null, null, null, null, null, null, null],
-    [null, null, null, null, null, null, null, null, null, null],
-    [null, null, null, null, null, null, null, null, null, null],
-    [null, null, null, null, null, null, null, null, null, null],
-    [null, null, null, null, null, null, null, null, null, null],
-  ];
-
-  for (let i = 0; i <= 8; i++) {
+  for (let i = 0; i <= upgradeLimit; i++) {
     for (let j = 0; j < actionNormal[i].try; j++) {
       actionMatrixNormal[i][j] = 'U';
     }
     actionMatrixNormal[i][actionNormal[i].try] = actionNormal[i].action;
   }
 
-  for (let i = 0; i <= 9; i++) {
+  for (let i = 0; i <= upgradeLimit + 1; i++) {
     for (let j = 0; j < actionHammer[i].try; j++) {
       actionMatrixHammer[i][j] = 'U';
     }
     actionMatrixHammer[i][actionHammer[i].try] = actionHammer[i].action;
   }
 
-  const costNormal = [
-    [0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0],
-  ];
+  const costNormal = Array.from(Array(upgradeLimit + 1), () =>
+    Array(upgradeLimit + 1).fill(0),
+  );
+  const costHammer = Array.from(Array(upgradeLimit + 2), () =>
+    Array(upgradeLimit + 2).fill(0),
+  );
+  const innocentNormal = Array.from(Array(upgradeLimit + 1), () =>
+    Array(upgradeLimit + 1).fill(0),
+  );
+  const innocentHammer = Array.from(Array(upgradeLimit + 2), () =>
+    Array(upgradeLimit + 2).fill(0),
+  );
+  const costFinalNormal = Array.from(Array(upgradeLimit + 1), () =>
+    Array(upgradeLimit + 1).fill(0),
+  );
+  const costFinalHammer = Array.from(Array(upgradeLimit + 2), () =>
+    Array(upgradeLimit + 2).fill(0),
+  );
 
-  const costHammer = [
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  ];
-
-  const innocentNormal = [
-    [0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0],
-  ];
-
-  const innocentHammer = [
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  ];
-
-  const costFinalNormal = [
-    [0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0],
-  ];
-
-  const costFinalHammer = [
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  ];
-
-  for (let i = 8; i >= 0; i--) {
-    for (let j = 9; j >= i; j--) {
+  for (let i = upgradeLimit; i >= 0; i--) {
+    for (let j = upgradeLimit + 1; j >= i; j--) {
       if (actionMatrixHammer[i][j] === 'U') {
         if (actionMatrixHammer[i][j + 1] === 'W') {
           costHammer[i][j] =
@@ -209,6 +72,8 @@ function calculate(actionNormal, actionHammer) {
             UPGRADE_PRICE / UPGRADE_PERCENTAGE;
           costHammer[i][j + 1] =
             costHammer[i][j] + WHITE_PRICE / WHITE_PERCENTAGE;
+          innocentHammer[i][j] = innocentHammer[i + 1][j + 1];
+          innocentHammer[i][j + 1] = innocentHammer[i + 1][j + 1];
         } else {
           costHammer[i][j] =
             UPGRADE_PERCENTAGE * costHammer[i + 1][j + 1] +
@@ -226,8 +91,8 @@ function calculate(actionNormal, actionHammer) {
     }
   }
 
-  for (let i = 8; i >= 0; i--) {
-    for (let j = 8; j >= i; j--) {
+  for (let i = upgradeLimit; i >= 0; i--) {
+    for (let j = upgradeLimit; j >= i; j--) {
       if (actionMatrixNormal[i][j] === 'U') {
         costNormal[i][j] =
           UPGRADE_PERCENTAGE * costNormal[i + 1][j + 1] +
@@ -253,8 +118,8 @@ function calculate(actionNormal, actionHammer) {
     }
   }
 
-  for (let i = 8; i >= 0; i--) {
-    for (let j = 9; j >= i; j--) {
+  for (let i = upgradeLimit; i >= 0; i--) {
+    for (let j = upgradeLimit + 1; j >= i; j--) {
       if (actionMatrixHammer[i][j] === 'U') {
         if (actionMatrixHammer[i][j + 1] === 'W') {
           costFinalHammer[i][j] =
@@ -279,8 +144,8 @@ function calculate(actionNormal, actionHammer) {
     }
   }
 
-  for (let i = 8; i >= 0; i--) {
-    for (let j = 8; j >= i; j--) {
+  for (let i = upgradeLimit; i >= 0; i--) {
+    for (let j = upgradeLimit; j >= i; j--) {
       if (actionMatrixNormal[i][j] === 'U') {
         costFinalNormal[i][j] =
           UPGRADE_PERCENTAGE * costFinalNormal[i + 1][j + 1] +
@@ -301,9 +166,100 @@ function calculate(actionNormal, actionHammer) {
     }
   }
 
-  // console.log(costNormal);
-  // console.log(costFinalNormal[0][0]);
   return costFinalNormal[0][0];
 }
 
-calculate(NORMAL_4, HAMMER_4);
+function tryAll(upgradeLimit) {
+  const A = [];
+  let min = 99999999;
+  let minA;
+  let minB;
+
+  function getB(arr) {
+    return arr.map(x => {
+      return {
+        try: x.action === 'I' ? x.try + 1 : upgradeLimit + 1,
+        action: x.action === 'I' ? 'I' : 'W',
+      };
+    });
+  }
+
+  function recursive(t, action, depth) {
+    A[depth] = { try: t, action: action };
+    if (depth === upgradeLimit) {
+      const B = getB(A);
+      const res = calculate(upgradeLimit, A, [
+        ...B,
+        { try: upgradeLimit + 1, action: 'FINISH' },
+      ]);
+      if (res < min) {
+        min = res;
+        minA = JSON.parse(JSON.stringify(A));
+        minB = JSON.parse(JSON.stringify(B));
+      }
+      const index = A.findIndex(x => x.action === 'H');
+      B[index] = { try: A[index].try + 1, action: 'I' };
+      const res2 = calculate(upgradeLimit, A, [
+        ...B,
+        { try: upgradeLimit + 1, action: 'FINISH' },
+      ]);
+      if (res2 < min) {
+        min = res2;
+        minA = JSON.parse(JSON.stringify(A));
+        minB = JSON.parse(JSON.stringify(B));
+      }
+      return;
+    }
+    for (let i = t; i <= upgradeLimit; i++) {
+      recursive(i, 'H', depth + 1);
+    }
+    if (action === 'I' && depth + 1 < upgradeLimit) {
+      for (let i = t + 1; i <= upgradeLimit; i++) {
+        recursive(i, 'I', depth + 1);
+      }
+    }
+  }
+
+  for (let i = 1; i <= upgradeLimit; i++) {
+    recursive(i, 'I', 0);
+  }
+
+  for (let i = 0; i <= upgradeLimit; i++) {
+    recursive(i, 'H', 0);
+  }
+
+  console.log(min);
+  console.log(minA);
+  console.log(minB);
+}
+
+tryAll(8);
+
+// const res = calculate(
+//   8,
+//   [
+//     { try: 3, action: 'I' },
+//     { try: 5, action: 'I' },
+//     { try: 7, action: 'I' },
+//     { try: 8, action: 'H' },
+//     { try: 8, action: 'H' },
+//     { try: 8, action: 'H' },
+//     { try: 8, action: 'H' },
+//     { try: 8, action: 'H' },
+//     { try: 8, action: 'H' },
+//   ],
+//   [
+//     { try: 4, action: 'I' },
+//     { try: 6, action: 'I' },
+//     { try: 8, action: 'I' },
+//     { try: 9, action: 'I' },
+//     { try: 9, action: 'W' },
+//     { try: 9, action: 'W' },
+//     { try: 9, action: 'W' },
+//     { try: 9, action: 'W' },
+//     { try: 9, action: 'W' },
+//     { try: 9, action: 'FINISH' },
+//   ],
+// );
+
+// console.log(res);
