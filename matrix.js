@@ -267,9 +267,7 @@ function calculate(upgradeLimit, actionNormal, actionHammer) {
           x => x / (1 - innocentNormal[0][0]),
         );
         costFinalHammer[i][j].innocent = [
-          ...costNormal[0][0].innocent.map(
-            x => x / (1 - innocentNormal[0][0]) + 1,
-          ),
+          ...costNormal[0][0].innocent.map(x => x / (1 - innocentNormal[0][0])),
           1,
         ];
         costFinalHammer[i][j].hammer = costNormal[0][0].hammer.map(
@@ -351,9 +349,7 @@ function calculate(upgradeLimit, actionNormal, actionHammer) {
           x => x / (1 - innocentNormal[0][0]),
         );
         costFinalNormal[i][j].innocent = [
-          ...costNormal[0][0].innocent.map(
-            x => x / (1 - innocentNormal[0][0]) + 1,
-          ),
+          ...costNormal[0][0].innocent.map(x => x / (1 - innocentNormal[0][0])),
           1,
         ];
         costFinalNormal[i][j].hammer = costNormal[0][0].hammer.map(
@@ -363,7 +359,6 @@ function calculate(upgradeLimit, actionNormal, actionHammer) {
     }
   }
 
-  console.log(costFinalNormal[0][0].hammer.reduce((sum, x) => sum + x, 0))
   return costFinalNormal[0][0];
 }
 
