@@ -42,43 +42,81 @@ function calculate(upgradeLimit, actionNormal, actionHammer) {
     actionMatrixHammer[i][actionHammer[i].try] = actionHammer[i].action;
   }
 
-  const costNormal = Array.from(Array(upgradeLimit + 1), () =>
-    Array(upgradeLimit + 1).fill(0),
-  );
-  const costHammer = Array.from(Array(upgradeLimit + 2), () =>
-    Array(upgradeLimit + 2).fill(0),
-  );
-  const innocentNormal = Array.from(Array(upgradeLimit + 1), () =>
-    Array(upgradeLimit + 1).fill(0),
-  );
-  const innocentHammer = Array.from(Array(upgradeLimit + 2), () =>
-    Array(upgradeLimit + 2).fill(0),
-  );
-  const costFinalNormal = Array.from(Array(upgradeLimit + 1), () =>
-    Array(upgradeLimit + 1).fill(0),
-  );
-  const costFinalHammer = Array.from(Array(upgradeLimit + 2), () =>
-    Array(upgradeLimit + 2).fill(0),
-  );
+  const costNormal = [];
+  const costHammer = [];
+  const innocentNormal = [];
+  const innocentHammer = [];
+  const costFinalNormal = [];
+  const costFinalHammer = [];
+  for (let i = 0; i <= upgradeLimit; i++) {
+    costNormal[i] = [];
+    costFinalNormal[i] = [];
+    innocentNormal[i] = [];
+    for (let j = 0; j <= upgradeLimit; j++) {
+      costNormal[i][j] = {
+        upgrade: 0,
+        white: 0,
+        innocent: 0,
+        hammer: 0,
+      };
+      costFinalNormal[i][j] = {
+        upgrade: 0,
+        white: 0,
+        innocent: 0,
+        hammer: 0,
+      };
+      innocentNormal[i][j] = 0;
+    }
+  }
+
+  for (let i = 0; i <= upgradeLimit + 1; i++) {
+    costHammer[i] = [];
+    costFinalHammer[i] = [];
+    innocentHammer[i] = [];
+    for (let j = 0; j <= upgradeLimit + 1; j++) {
+      costHammer[i][j] = {
+        upgrade: 0,
+        white: 0,
+        innocent: 0,
+        hammer: 0,
+      };
+      costFinalHammer[i][j] = {
+        upgrade: 0,
+        white: 0,
+        innocent: 0,
+        hammer: 0,
+      };
+      innocentHammer[i][j] = 0;
+    }
+  }
 
   for (let i = upgradeLimit; i >= 0; i--) {
     for (let j = upgradeLimit + 1; j >= i; j--) {
       if (actionMatrixHammer[i][j] === 'U') {
         if (actionMatrixHammer[i][j + 1] === 'W') {
-          costHammer[i][j] =
-            costHammer[i + 1][j + 1] +
-            ((1 - UPGRADE_PERCENTAGE) / UPGRADE_PERCENTAGE) *
-              (WHITE_PRICE / WHITE_PERCENTAGE) +
-            UPGRADE_PRICE / UPGRADE_PERCENTAGE;
-          costHammer[i][j + 1] =
-            costHammer[i][j] + WHITE_PRICE / WHITE_PERCENTAGE;
+          costHammer[i][j].upgrade =
+            costHammer[i + 1][j + 1].upgrade + 1 / UPGRADE_PERCENTAGE;
+          costHammer[i][j].white =
+            costHammer[i + 1][j + 1].white +
+            (1 - UPGRADE_PERCENTAGE) / UPGRADE_PERCENTAGE;
+          costHammer[i][j + 1].upgrade = costHammer[i][j].upgrade;
+          costHammer[i][j + 1].white = costHammer[i][j].white + 1;
           innocentHammer[i][j] = innocentHammer[i + 1][j + 1];
           innocentHammer[i][j + 1] = innocentHammer[i + 1][j + 1];
         } else {
-          costHammer[i][j] =
-            UPGRADE_PERCENTAGE * costHammer[i + 1][j + 1] +
-            (1 - UPGRADE_PERCENTAGE) * costHammer[i][j + 1] +
-            UPGRADE_PRICE;
+          costHammer[i][j].upgrade =
+            UPGRADE_PERCENTAGE * costHammer[i + 1][j + 1].upgrade +
+            (1 - UPGRADE_PERCENTAGE) * costHammer[i][j + 1].upgrade +
+            1;
+          costHammer[i][j].white =
+            UPGRADE_PERCENTAGE * costHammer[i + 1][j + 1].white +
+            (1 - UPGRADE_PERCENTAGE) * costHammer[i][j + 1].white;
+          costHammer[i][j].innocent =
+            UPGRADE_PERCENTAGE * costHammer[i + 1][j + 1].innocent +
+            (1 - UPGRADE_PERCENTAGE) * costHammer[i][j + 1].innocent;
+          costHammer[i][j].hammer =
+            UPGRADE_PERCENTAGE * costHammer[i + 1][j + 1].hammer +
+            (1 - UPGRADE_PERCENTAGE) * costHammer[i][j + 1].hammer;
           innocentHammer[i][j] =
             UPGRADE_PERCENTAGE * innocentHammer[i + 1][j + 1] +
             (1 - UPGRADE_PERCENTAGE) * innocentHammer[i][j + 1];
@@ -86,7 +124,7 @@ function calculate(upgradeLimit, actionNormal, actionHammer) {
       }
       if (actionMatrixHammer[i][j] === 'I') {
         innocentHammer[i][j] = 1;
-        costHammer[i][j] = INNOCENT_PRICE / INNOCENT_PERCENTAGE;
+        costHammer[i][j].innocent = 1;
       }
     }
   }
@@ -94,26 +132,44 @@ function calculate(upgradeLimit, actionNormal, actionHammer) {
   for (let i = upgradeLimit; i >= 0; i--) {
     for (let j = upgradeLimit; j >= i; j--) {
       if (actionMatrixNormal[i][j] === 'U') {
-        costNormal[i][j] =
-          UPGRADE_PERCENTAGE * costNormal[i + 1][j + 1] +
-          (1 - UPGRADE_PERCENTAGE) * costNormal[i][j + 1] +
-          UPGRADE_PRICE;
+        costNormal[i][j].upgrade =
+          UPGRADE_PERCENTAGE * costNormal[i + 1][j + 1].upgrade +
+          (1 - UPGRADE_PERCENTAGE) * costNormal[i][j + 1].upgrade +
+          1;
+        costNormal[i][j].white =
+          UPGRADE_PERCENTAGE * costNormal[i + 1][j + 1].white +
+          (1 - UPGRADE_PERCENTAGE) * costNormal[i][j + 1].white;
+        costNormal[i][j].innocent =
+          UPGRADE_PERCENTAGE * costNormal[i + 1][j + 1].innocent +
+          (1 - UPGRADE_PERCENTAGE) * costNormal[i][j + 1].innocent;
+        costNormal[i][j].hammer =
+          UPGRADE_PERCENTAGE * costNormal[i + 1][j + 1].hammer +
+          (1 - UPGRADE_PERCENTAGE) * costNormal[i][j + 1].hammer;
         innocentNormal[i][j] =
           UPGRADE_PERCENTAGE * innocentNormal[i + 1][j + 1] +
           (1 - UPGRADE_PERCENTAGE) * innocentNormal[i][j + 1];
       }
       if (actionMatrixNormal[i][j] === 'H') {
-        costNormal[i][j] =
-          HAMMER_PERCENTAGE * costHammer[i][j] +
-          (1 - HAMMER_PERCENTAGE) * costHammer[i][j + 1] +
-          HAMMER_PRICE;
+        costNormal[i][j].upgrade =
+          HAMMER_PERCENTAGE * costHammer[i][j].upgrade +
+          (1 - HAMMER_PERCENTAGE) * costHammer[i][j + 1].upgrade;
+        costNormal[i][j].white =
+          HAMMER_PERCENTAGE * costHammer[i][j].white +
+          (1 - HAMMER_PERCENTAGE) * costHammer[i][j + 1].white;
+        costNormal[i][j].innocent =
+          HAMMER_PERCENTAGE * costHammer[i][j].innocent +
+          (1 - HAMMER_PERCENTAGE) * costHammer[i][j + 1].innocent;
+        costNormal[i][j].hammer =
+          HAMMER_PERCENTAGE * costHammer[i][j].hammer +
+          (1 - HAMMER_PERCENTAGE) * costHammer[i][j + 1].hammer +
+          1;
         innocentNormal[i][j] =
           HAMMER_PERCENTAGE * innocentHammer[i][j] +
           (1 - HAMMER_PERCENTAGE) * innocentHammer[i][j + 1];
       }
       if (actionMatrixNormal[i][j] === 'I') {
         innocentNormal[i][j] = 1;
-        costNormal[i][j] = INNOCENT_PRICE / INNOCENT_PERCENTAGE;
+        costNormal[i][j].innocent = 1;
       }
     }
   }
@@ -122,24 +178,38 @@ function calculate(upgradeLimit, actionNormal, actionHammer) {
     for (let j = upgradeLimit + 1; j >= i; j--) {
       if (actionMatrixHammer[i][j] === 'U') {
         if (actionMatrixHammer[i][j + 1] === 'W') {
-          costFinalHammer[i][j] =
-            costFinalHammer[i + 1][j + 1] +
-            ((1 - UPGRADE_PERCENTAGE) / UPGRADE_PERCENTAGE) *
-              (WHITE_PRICE / WHITE_PERCENTAGE) +
-            UPGRADE_PRICE / UPGRADE_PERCENTAGE;
-          costFinalHammer[i][j + 1] =
-            costFinalHammer[i][j] + WHITE_PRICE / WHITE_PERCENTAGE;
+          costFinalHammer[i][j].upgrade =
+            costFinalHammer[i + 1][j + 1].upgrade + 1 / UPGRADE_PERCENTAGE;
+          costFinalHammer[i][j].white =
+            costFinalHammer[i + 1][j + 1].white +
+            (1 - UPGRADE_PERCENTAGE) / UPGRADE_PERCENTAGE;
+          costFinalHammer[i][j + 1].upgrade = costFinalHammer[i][j].upgrade;
+          costFinalHammer[i][j + 1].white = costFinalHammer[i][j].white + 1;
         } else {
-          costFinalHammer[i][j] =
-            UPGRADE_PERCENTAGE * costFinalHammer[i + 1][j + 1] +
-            (1 - UPGRADE_PERCENTAGE) * costFinalHammer[i][j + 1] +
-            UPGRADE_PRICE;
+          costFinalHammer[i][j].upgrade =
+            UPGRADE_PERCENTAGE * costFinalHammer[i + 1][j + 1].upgrade +
+            (1 - UPGRADE_PERCENTAGE) * costFinalHammer[i][j + 1].upgrade +
+            1;
+          costFinalHammer[i][j].white =
+            UPGRADE_PERCENTAGE * costFinalHammer[i + 1][j + 1].white +
+            (1 - UPGRADE_PERCENTAGE) * costFinalHammer[i][j + 1].white;
+          costFinalHammer[i][j].innocent =
+            UPGRADE_PERCENTAGE * costFinalHammer[i + 1][j + 1].innocent +
+            (1 - UPGRADE_PERCENTAGE) * costFinalHammer[i][j + 1].innocent;
+          costFinalHammer[i][j].hammer =
+            UPGRADE_PERCENTAGE * costFinalHammer[i + 1][j + 1].hammer +
+            (1 - UPGRADE_PERCENTAGE) * costFinalHammer[i][j + 1].hammer;
         }
       }
       if (actionMatrixHammer[i][j] === 'I') {
-        costFinalHammer[i][j] =
-          costNormal[0][0] / (1 - innocentNormal[0][0]) +
-          INNOCENT_PRICE / INNOCENT_PERCENTAGE;
+        costFinalHammer[i][j].upgrade =
+          costNormal[0][0].upgrade / (1 - innocentNormal[0][0]);
+        costFinalHammer[i][j].white =
+          costNormal[0][0].white / (1 - innocentNormal[0][0]);
+        costFinalHammer[i][j].innocent =
+          costNormal[0][0].innocent / (1 - innocentNormal[0][0]) + 1;
+        costFinalHammer[i][j].hammer =
+          costNormal[0][0].hammer / (1 - innocentNormal[0][0]);
       }
     }
   }
@@ -147,21 +217,44 @@ function calculate(upgradeLimit, actionNormal, actionHammer) {
   for (let i = upgradeLimit; i >= 0; i--) {
     for (let j = upgradeLimit; j >= i; j--) {
       if (actionMatrixNormal[i][j] === 'U') {
-        costFinalNormal[i][j] =
-          UPGRADE_PERCENTAGE * costFinalNormal[i + 1][j + 1] +
-          (1 - UPGRADE_PERCENTAGE) * costFinalNormal[i][j + 1] +
-          UPGRADE_PRICE;
+        costFinalNormal[i][j].upgrade =
+          UPGRADE_PERCENTAGE * costFinalNormal[i + 1][j + 1].upgrade +
+          (1 - UPGRADE_PERCENTAGE) * costFinalNormal[i][j + 1].upgrade +
+          1;
+        costFinalNormal[i][j].white =
+          UPGRADE_PERCENTAGE * costFinalNormal[i + 1][j + 1].white +
+          (1 - UPGRADE_PERCENTAGE) * costFinalNormal[i][j + 1].white;
+        costFinalNormal[i][j].innocent =
+          UPGRADE_PERCENTAGE * costFinalNormal[i + 1][j + 1].innocent +
+          (1 - UPGRADE_PERCENTAGE) * costFinalNormal[i][j + 1].innocent;
+        costFinalNormal[i][j].hammer =
+          UPGRADE_PERCENTAGE * costFinalNormal[i + 1][j + 1].hammer +
+          (1 - UPGRADE_PERCENTAGE) * costFinalNormal[i][j + 1].hammer;
       }
       if (actionMatrixNormal[i][j] === 'H') {
-        costFinalNormal[i][j] =
-          HAMMER_PERCENTAGE * costFinalHammer[i][j] +
-          (1 - HAMMER_PERCENTAGE) * costFinalHammer[i][j + 1] +
-          HAMMER_PRICE;
+        costFinalNormal[i][j].upgrade =
+          HAMMER_PERCENTAGE * costFinalHammer[i][j].upgrade +
+          (1 - HAMMER_PERCENTAGE) * costFinalHammer[i][j + 1].upgrade;
+        costFinalNormal[i][j].white =
+          HAMMER_PERCENTAGE * costFinalHammer[i][j].white +
+          (1 - HAMMER_PERCENTAGE) * costFinalHammer[i][j + 1].white;
+        costFinalNormal[i][j].innocent =
+          HAMMER_PERCENTAGE * costFinalHammer[i][j].innocent +
+          (1 - HAMMER_PERCENTAGE) * costFinalHammer[i][j + 1].innocent;
+        costFinalNormal[i][j].hammer =
+          HAMMER_PERCENTAGE * costFinalHammer[i][j].hammer +
+          (1 - HAMMER_PERCENTAGE) * costFinalHammer[i][j + 1].hammer +
+          1;
       }
       if (actionMatrixNormal[i][j] === 'I') {
-        costFinalNormal[i][j] =
-          costNormal[0][0] / (1 - innocentNormal[0][0]) +
-          INNOCENT_PRICE / INNOCENT_PERCENTAGE;
+        costFinalNormal[i][j].upgrade =
+          costNormal[0][0].upgrade / (1 - innocentNormal[0][0]);
+        costFinalNormal[i][j].white =
+          costNormal[0][0].white / (1 - innocentNormal[0][0]);
+        costFinalNormal[i][j].innocent =
+          costNormal[0][0].innocent / (1 - innocentNormal[0][0]) + 1;
+        costFinalNormal[i][j].hammer =
+          costNormal[0][0].hammer / (1 - innocentNormal[0][0]);
       }
     }
   }
@@ -228,33 +321,33 @@ function tryAll(upgradeLimit) {
   console.log(minB);
 }
 
-tryAll(8);
+// tryAll(8);
 
-// const res = calculate(
-//   8,
-//   [
-//     { try: 3, action: 'I' },
-//     { try: 5, action: 'I' },
-//     { try: 7, action: 'I' },
-//     { try: 8, action: 'I' },
-//     { try: 8, action: 'H' },
-//     { try: 8, action: 'H' },
-//     { try: 8, action: 'H' },
-//     { try: 8, action: 'H' },
-//     { try: 8, action: 'H' },
-//   ],
-//   [
-//     { try: 4, action: 'I' },
-//     { try: 6, action: 'I' },
-//     { try: 8, action: 'I' },
-//     { try: 9, action: 'I' },
-//     { try: 9, action: 'W' },
-//     { try: 9, action: 'W' },
-//     { try: 9, action: 'W' },
-//     { try: 9, action: 'W' },
-//     { try: 9, action: 'W' },
-//     { try: 9, action: 'FINISH' },
-//   ],
-// );
+const res = calculate(
+  8,
+  [
+    { try: 5, action: 'I' },
+    { try: 6, action: 'I' },
+    { try: 7, action: 'I' },
+    { try: 8, action: 'H' },
+    { try: 8, action: 'H' },
+    { try: 8, action: 'H' },
+    { try: 8, action: 'H' },
+    { try: 8, action: 'H' },
+    { try: 8, action: 'H' },
+  ],
+  [
+    { try: 4, action: 'I' },
+    { try: 6, action: 'I' },
+    { try: 8, action: 'I' },
+    { try: 9, action: 'I' },
+    { try: 9, action: 'W' },
+    { try: 9, action: 'W' },
+    { try: 9, action: 'W' },
+    { try: 9, action: 'W' },
+    { try: 9, action: 'W' },
+    { try: 9, action: 'FINISH' },
+  ],
+);
 
-// console.log(res);
+console.log(res);
