@@ -210,9 +210,7 @@ function tryAll(upgradeLimit) {
       }
       return;
     }
-    for (let i = t; i <= upgradeLimit; i++) {
-      recursive(i, 'H', depth + 1);
-    }
+    recursive(upgradeLimit, 'H', depth + 1);
     if (action === 'I' && depth + 1 < upgradeLimit) {
       for (let i = t + 1; i <= upgradeLimit; i++) {
         recursive(i, 'I', depth + 1);
@@ -223,10 +221,7 @@ function tryAll(upgradeLimit) {
   for (let i = 1; i <= upgradeLimit; i++) {
     recursive(i, 'I', 0);
   }
-
-  for (let i = 0; i <= upgradeLimit; i++) {
-    recursive(i, 'H', 0);
-  }
+  recursive(upgradeLimit, 'H', 0);
 
   console.log(min);
   console.log(minA);
@@ -241,7 +236,7 @@ tryAll(8);
 //     { try: 3, action: 'I' },
 //     { try: 5, action: 'I' },
 //     { try: 7, action: 'I' },
-//     { try: 8, action: 'H' },
+//     { try: 8, action: 'I' },
 //     { try: 8, action: 'H' },
 //     { try: 8, action: 'H' },
 //     { try: 8, action: 'H' },
