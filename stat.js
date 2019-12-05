@@ -1,4 +1,6 @@
-const data = require('./hammer_70p.json');
+const fs = require('fs-extra');
+
+const data = fs.readJSONSync('./hammer_70p.json');
 
 const stat = {};
 const target = 'white';

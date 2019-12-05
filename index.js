@@ -1,13 +1,29 @@
-const math = require('mathjs');
+function productRange(a, b) {
+  let product = a;
+  let i = a;
+
+  while (i++ < b) {
+    product *= i;
+  }
+  return product;
+}
+
+function combinations(n, r) {
+  if (n == r) {
+    return 1;
+  }
+  r = r < n - r ? n - r : r;
+  return productRange(r + 1, n) / productRange(1, n - r);
+}
 
 function init({ upgradeLimit, upgradePercentage }) {
   const upgradeBinom = [];
   const upgradeBinomCum = [];
   for (let i = 0; i <= upgradeLimit; i++) {
     upgradeBinom[i] =
-      math.pow(1 - upgradePercentage, upgradeLimit - i) *
-      math.pow(upgradePercentage, i) *
-      math.combinations(upgradeLimit, i);
+      Math.pow(1 - upgradePercentage, upgradeLimit - i) *
+      Math.pow(upgradePercentage, i) *
+      combinations(upgradeLimit, i);
   }
   for (let i = 0; i <= upgradeLimit; i++) {
     upgradeBinomCum[i] = 0;
@@ -26,7 +42,7 @@ function init({ upgradeLimit, upgradePercentage }) {
 // function getupgradeTry(i) {
 //   return (
 //     upgradeBinomCum[INNOCENT_LIMIT] *
-//     math.pow(1 - upgradeBinomCum[INNOCENT_LIMIT], i - 1)
+//     Math.pow(1 - upgradeBinomCum[INNOCENT_LIMIT], i - 1)
 //   );
 // }
 
@@ -52,7 +68,7 @@ function getInnocentProb(
   }
   const q = 1 - p;
   const k = innocentPercentage;
-  return p * q * k * math.pow(1 - p * k, i - 1);
+  return p * q * k * Math.pow(1 - p * k, i - 1);
 }
 
 function getInnocentMean({
@@ -104,17 +120,17 @@ function getWhiteProb(
       sum +=
         q *
         prob *
-        math.combinations(i - 1, j - 1) *
-        math.pow(rate, j) *
-        math.pow(1 - rate, i - j);
+        combinations(i - 1, j - 1) *
+        Math.pow(rate, j) *
+        Math.pow(1 - rate, i - j);
     }
     if (j >= 2 && i >= j - 1) {
       sum +=
         p *
         prob *
-        math.combinations(i - 1, j - 2) *
-        math.pow(rate, j - 1) *
-        math.pow(1 - rate, i - j + 1);
+        combinations(i - 1, j - 2) *
+        Math.pow(rate, j - 1) *
+        Math.pow(1 - rate, i - j + 1);
     }
   }
   if (i >= upgradeLimit - innocentLimit + 1 && isBeforeHammer) {
@@ -123,9 +139,9 @@ function getWhiteProb(
         hammerPercentage *
         upgradePercentage) /
         total) *
-      math.combinations(i - 1, upgradeLimit - innocentLimit) *
-      math.pow(rate, upgradeLimit - innocentLimit + 1) *
-      math.pow(1 - rate, i - upgradeLimit + innocentLimit - 1);
+      combinations(i - 1, upgradeLimit - innocentLimit) *
+      Math.pow(rate, upgradeLimit - innocentLimit + 1) *
+      Math.pow(1 - rate, i - upgradeLimit + innocentLimit - 1);
   }
   return sum;
 }
@@ -180,7 +196,7 @@ function getHammerProb(
       : 0);
   return (
     (p / upgradeBinomCum[innocentLimit - 1]) *
-    math.pow(1 - p / upgradeBinomCum[innocentLimit - 1], i - 1)
+    Math.pow(1 - p / upgradeBinomCum[innocentLimit - 1], i - 1)
   );
 }
 
@@ -219,6 +235,7 @@ function run() {
   const d = getWhiteMean(config);
   const e = getHammerProb(5, config);
   const f = getHammerMean(config);
+  console.log(a, b, c, d, e, f);
 }
 
 run();
